@@ -16,16 +16,25 @@ services:
     volumes:
       - redis_data:/data
 
-  ollama:
-    image: ollama/ollama:latest
+#  ollama:
+#    image: ollama/ollama:latest
+#    restart: unless-stopped
+#    ports:
+#      - "11434:11434"   # API HTTP do Ollama
+#    volumes:
+#      - ollama_data:/root/.ollama
+#    environment:
+#      - OLLAMA_KEEP_ALIVE=24h   # mantém o modelo carregado em memória
+#      - OLLAMA_MAX_LOADED_MODELS=2
+
+  qdrant:
+    image: qdrant/qdrant:latest
     restart: unless-stopped
     ports:
-      - "11434:11434"   # API HTTP do Ollama
+      - "6333:6333"     # API HTTP
+      - "6334:6334"     # API gRPC
     volumes:
-      - ollama_data:/root/.ollama
-    environment:
-      - OLLAMA_KEEP_ALIVE=24h   # mantém o modelo carregado em memória
-      - OLLAMA_MAX_LOADED_MODELS=2
+      - qdrant_data:/qdrant/storage
 
   n8n:
     image: n8nio/n8n
@@ -51,16 +60,21 @@ services:
       N8N_BASIC_AUTH_PASSWORD: senha-super-segura
       GENERIC_TIMEZONE: America/Sao_Paulo
 
+      # --- Conexão com Qdrant ---
+      QDRANT_URL: http://qdrant:6333
+
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/home/node/workflows
     depends_on:
       - postgres_n8n
       - redis_n8n
-      - ollama   # <--- garante que o n8n suba depois do Ollama
+#      - ollama   # <--- garante que o n8n suba depois do Ollama
+      - qdrant
 
 volumes:
   postgres_data:
   redis_data:
   n8n_data:
-  ollama_data:
+#  ollama_data:
+  qdrant_data:

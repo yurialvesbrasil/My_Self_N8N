@@ -10,12 +10,14 @@ Este projeto permite rodar o [N8N](https://n8n.io/) localmente utilizando Docker
 - **Redis**: Gerenciamento de filas para execução dos workflows.
 - **Ollama**: API para rodar modelos de IA localmente.
 - **N8N**: Plataforma de automação de workflows.
+- **Qdrant**: Banco de dados vetorial para embeddings, busca semântica e RAG/memória.
 
 ---
 
 ## ⚙️ Como levantar o ambiente
 
 1. **Clone o repositório e acesse a pasta:**
+
    ```sh
    git clone <url-do-repo>
    cd N8N
@@ -36,6 +38,79 @@ Este projeto permite rodar o [N8N](https://n8n.io/) localmente utilizando Docker
   - `postgres_data`: dados do Postgres
   - `redis_data`: dados do Redis
   - `ollama_data`: modelos baixados do Ollama
+  - `qdrant_data`: coleções/vetores armazenados pelo Qdrant
+
+---
+
+## 🧠 Qdrant: Banco Vetorial
+
+### Por que adicionamos o Qdrant?
+
+O Qdrant é um banco de dados vetorial utilizado para armazenar e buscar embeddings de alta dimensão. Ele permite implementar recursos como busca semântica, RAG (Retrieval-Augmented Generation), recomendação e memória de longo prazo em workflows do N8N. Com isso, é possível:
+
+- Indexar documentos em vetores e recuperar conteúdos semelhantes por significado.
+- Construir agentes com memória, histórico e contexto persistente.
+- Aumentar respostas de IA com contexto relevante (RAG) e reduzir alucinações.
+
+### Como acessar o Qdrant
+
+- **API HTTP**: `http://localhost:6333`
+- **gRPC**: `localhost:6334`
+- **Volume de dados**: `qdrant_data` mapeado para `/qdrant/storage` (persistência local)
+
+O serviço está definido no `docker-compose.yml` como `qdrant` e o N8N já possui a variável de ambiente `QDRANT_URL` apontando para `http://qdrant:6333` para uso dentro da rede Docker.
+
+### Testes rápidos (cURL)
+
+1. Verificar saúde do serviço:
+
+```sh
+curl http://localhost:6333/healthz
+```
+
+2. Criar uma coleção (ex.: `docs`, com vetores de dimensão 768 e métrica cosseno):
+
+```sh
+curl -X PUT "http://localhost:6333/collections/docs" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vectors": { "size": 768, "distance": "Cosine" }
+  }'
+```
+
+3. Inserir pontos (embeddings) na coleção:
+
+```sh
+curl -X PUT "http://localhost:6333/collections/docs/points?wait=true" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "points": [
+      {"id": 1, "vector": [0.01, 0.02, 0.03, /* ... 768 dims ... */ 0.04], "payload": {"title": "Doc A"}},
+      {"id": 2, "vector": [0.02, 0.03, 0.01, /* ... 768 dims ... */ 0.05], "payload": {"title": "Doc B"}}
+    ]
+  }'
+```
+
+4. Fazer uma busca por similaridade:
+
+```sh
+curl -X POST "http://localhost:6333/collections/docs/points/search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vector": [0.01, 0.02, 0.03, /* ... 768 dims ... */ 0.04],
+    "limit": 5,
+    "with_payload": true
+  }'
+```
+
+Obs.: substitua os vetores de exemplo pelos embeddings reais gerados pelo seu modelo (por exemplo, via Ollama + uma etapa de embedding adequada).
+
+### Integração com o N8N
+
+- Dentro do container do N8N, o Qdrant está acessível via `QDRANT_URL=http://qdrant:6333`.
+- Use o nó `HTTP Request` para chamar a API do Qdrant (criar coleções, upsert e busca).
+- Se estiver utilizando nós/comunidade para vetores, aponte o endpoint para o `QDRANT_URL`.
+- Fluxos típicos de RAG: `Texto/Arquivo → Embedding → Upsert no Qdrant → Consulta por vetor → Contexto → LLM`.
 
 ---
 
@@ -104,3 +179,4 @@ Se tudo estiver certo, o modelo irá retornar uma resposta. ✅
 
 - [Documentação oficial do N8N](https://docs.n8n.io/)
 - [Documentação do Ollama](https://ollama.com/)
+- [Documentação do Qdrant](https://qdrant.tech/documentation/)
