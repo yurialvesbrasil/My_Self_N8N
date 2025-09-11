@@ -1,6 +1,8 @@
 # 🚀 Projeto N8N via Docker
 
-Este projeto permite rodar o [N8N](https://n8n.io/) localmente utilizando Docker, com persistência de dados, autenticação básica, integração com banco de dados Postgres, Redis para filas e o Ollama para IA generativa.
+![Run n8n Locally](docs/img/n8n-docker.png)
+
+Este projeto permite rodar o [N8N](https://n8n.io/) localmente utilizando Docker, com persistência de dados, autenticação básica, integração com banco de dados Postgres, Redis para filas, Qdrant para embeddings e o Ollama para IA generativa.
 
 ---
 
