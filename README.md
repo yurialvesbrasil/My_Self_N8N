@@ -118,9 +118,7 @@ Obs.: substitua os vetores de exemplo pelos embeddings reais gerados pelo seu mo
 
 ## 🔒 Autenticação
 
-- O N8N está protegido por autenticação básica:
-  - **Usuário:** `admin`
-  - **Senha:** `senha-super-segura`
+- O n8n mudou o esquema de autenticação: antes usava Basic Auth (usuário/senha no docker-compose), agora o acesso é feito por login com e-mail e senha, que ficam armazenados no banco de dados do n8n (Postgres no caso).
 - O timezone está configurado para `America/Sao_Paulo`.
 
 ---
