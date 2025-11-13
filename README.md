@@ -180,3 +180,7 @@ Se tudo estiver certo, o modelo irá retornar uma resposta. ✅
 - [Documentação oficial do N8N](https://docs.n8n.io/)
 - [Documentação do Ollama](https://ollama.com/)
 - [Documentação do Qdrant](https://qdrant.tech/documentation/)
+
+
+docker compose build --no-cache
+npm install -g firebase-admin

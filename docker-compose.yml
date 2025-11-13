@@ -49,6 +49,14 @@ services:
       DB_POSTGRESDB_DATABASE: n8n_db
       DB_POSTGRESDB_USER: n8n
       DB_POSTGRESDB_PASSWORD: n8n_pass
+      
+      # --- configura o n8n ----
+      N8N_RUNNERS_ENABLED: true
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: false
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+      N8N_ALLOW_EXTERNAL_MODULES: firebase-admin
+      N8N_SECURITY_ALLOW_EXTERNAL_MODULES: firebase-admin
+      N8N_CUSTOM_EXTENSIONS: /home/node/.n8n/custom
 
       # --- Redis ---
       QUEUE_BULL_REDIS_HOST: redis_n8n
@@ -65,6 +73,9 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/home/node/workflows
+      # pasta local (no host) com os nodes customizados
+      # cria ./custom-nodes na raiz do projeto
+      - ./custom-nodes:/home/node/.n8n/custom
     depends_on:
       - postgres_n8n
       - redis_n8n
